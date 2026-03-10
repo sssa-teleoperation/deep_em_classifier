@@ -5,6 +5,11 @@ import glob
 import tempfile
 import numpy as np
 
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+WORKSPACE_SRC_DIR = os.path.dirname(CURRENT_DIR)
+if WORKSPACE_SRC_DIR not in sys.path:
+    sys.path.insert(0, WORKSPACE_SRC_DIR)
+
 import keras
 
 from sp_tool.arff_helper import ArffHelper
