@@ -5,6 +5,11 @@ You can call this function as `AnnotateDataAll(path_to_input_arff_files_folder, 
 If you want to extract features from another data set, you can manually run the AnnotateData function in a loop for all 
 the needed files (run as `AnnotateData('path/to/input/file.arff', 'path/to/output/file.arff')`).
 
+Python equivalents are available:
+
+- `python AnnotateData.py path/to/input/file.arff path/to/output/file.arff`
+- `python AnnotateDataAll.py path_to_input_arff_files_folder path_to_resulting_features_folder`
+
 The .arff files to be processed need to have at least 4 columns:  
 * x,      		the x coordinate of gaze location (in pixels, in case of GazeCom)
 * y,      		the x coordinate of gaze location (in pixels, in case of GazeCom)
