@@ -37,7 +37,8 @@ def main():
     # Script paths
     csv2arff_script = os.path.join(BASE_DIR, "varjo_em/csv2arff.py")
     annotate_script = os.path.join(BASE_DIR, "feature_extraction/AnnotateData.py")
-    model_script = os.path.join(BASE_DIR, "blstm_model_run.py")
+    classifier_script = os.path.join(BASE_DIR, "blstm_model_run.py")
+    arff2csv_script = os.path.join(BASE_DIR, "varjo_em/arff2csv_em.py")
     plot_script = os.path.join(BASE_DIR, "varjo_em/plot_em.py")
     model_path = os.path.join(BASE_DIR, "model/Conv_sample_windows_epochs_1000_without_doves_final_architecture.h5")
 
@@ -45,10 +46,12 @@ def main():
     raw_dir = os.path.join(BASE_DIR, "example_data/arff_raw")
     feat_dir = os.path.join(BASE_DIR, "example_data/arff_features")
     em_dir = os.path.join(BASE_DIR, "example_data/arff_em")
+    em_csv_dir = os.path.join(BASE_DIR, "example_data/csv_em")
 
     ensure_dir(raw_dir)
     ensure_dir(feat_dir)
     ensure_dir(em_dir)
+    ensure_dir(em_csv_dir)
 
     # Base filename
     filename = os.path.splitext(os.path.basename(csv_path))[0]
@@ -56,6 +59,7 @@ def main():
     raw_arff = os.path.join(raw_dir, f"{filename}.arff")
     feat_arff = os.path.join(feat_dir, f"{filename}_features.arff")
     em_arff = os.path.join(em_dir, f"{filename}_em.arff")
+    em_csv = os.path.join(em_csv_dir, f"{filename}_em.csv")
 
     # STEP 1: CSV -> ARFF raw
     cmd1 = f"python {csv2arff_script} {csv_path} {raw_arff}"
@@ -67,7 +71,7 @@ def main():
 
     # STEP 3: ARFF with features -> ARFF with EM classification
     cmd3 = (
-        f"python {model_script} "
+        f"python {classifier_script} "
         f"--feat speed direction "
         f"--model {model_path} "
         f"--in {feat_arff} "
@@ -75,7 +79,11 @@ def main():
     )
     run_command(cmd3)
 
-    # STEP 4: Optional plotting
+    # STEP 4: ARFF with EM -> CSV with EM
+    cmd4 = f"python {arff2csv_script} {csv_path} {em_arff} {em_csv}"
+    run_command(cmd4)
+    
+    # STEP 5: Optional plotting
     if args.show_plot:
         cmd4 = f"python {plot_script} {em_arff}"
         run_command(cmd4)
