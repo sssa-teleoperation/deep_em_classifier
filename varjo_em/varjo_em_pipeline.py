@@ -5,6 +5,8 @@ import glob
 
 
 BASE_DIR = "/ws/src/deep_em_classifier"
+PARTICIPANT = 2
+N_TRIALS = 42
 
 
 def run_command(cmd):
@@ -17,8 +19,8 @@ def ensure_dir(path):
     os.makedirs(path, exist_ok=True)
 
 def find_csv_file(trial):
-    raw_csv_dir = os.path.join(BASE_DIR, "example_data/csv")
-    pattern = os.path.join(raw_csv_dir, f"*trial_{trial}_*.csv")
+    raw_csv_dir = os.path.join(BASE_DIR, f"agency_experiment_data/participant_{PARTICIPANT}/csv")
+    pattern = os.path.join(raw_csv_dir, f"*participant_{PARTICIPANT}_trial_{trial}_*.csv")
     csv_files = glob.glob(pattern)
     if not csv_files:
         raise FileNotFoundError(f"No CSV file found for trial {trial} in {raw_csv_dir}")
@@ -26,72 +28,74 @@ def find_csv_file(trial):
 
 def main():
     parser = argparse.ArgumentParser(description="Pipeline raw CSV -> raw ARFF -> features ARFF -> em ARFF")
-    parser.add_argument("--trial", required=True, help="Trial number")
+    # parser.add_argument("--trial", required=True, help="Trial number")
     parser.add_argument("--show_plot", action="store_true", help="Generate plots")
 
     args = parser.parse_args()
 
-    trial = args.trial
-    csv_path = find_csv_file(trial)
+    # trial = args.trial
 
-    # Script paths
-    csv2arff_script = os.path.join(BASE_DIR, "varjo_em/csv2arff.py")
-    annotate_script = os.path.join(BASE_DIR, "feature_extraction/AnnotateData.py")
-    classifier_script = os.path.join(BASE_DIR, "blstm_model_run.py")
-    arff2csv_script = os.path.join(BASE_DIR, "varjo_em/arff2csv_em.py")
-    plot_script = os.path.join(BASE_DIR, "varjo_em/plot_em.py")
-    model_path = os.path.join(BASE_DIR, "model/Conv_sample_windows_epochs_1000_without_doves_final_architecture.h5")
+    for trial in range(1, N_TRIALS + 1):
+        csv_path = find_csv_file(trial)
 
-    # Output folders
-    raw_dir = os.path.join(BASE_DIR, "example_data/arff_raw")
-    feat_dir = os.path.join(BASE_DIR, "example_data/arff_features")
-    em_dir = os.path.join(BASE_DIR, "example_data/arff_em")
-    em_csv_dir = os.path.join(BASE_DIR, "example_data/csv_em")
+        # Script paths
+        csv2arff_script = os.path.join(BASE_DIR, "varjo_em/csv2arff.py")
+        annotate_script = os.path.join(BASE_DIR, "feature_extraction/AnnotateData.py")
+        classifier_script = os.path.join(BASE_DIR, "blstm_model_run.py")
+        arff2csv_script = os.path.join(BASE_DIR, "varjo_em/arff2csv_em.py")
+        plot_script = os.path.join(BASE_DIR, "varjo_em/plot_em.py")
+        model_path = os.path.join(BASE_DIR, "model/Conv_sample_windows_epochs_1000_without_doves_final_architecture.h5")
 
-    ensure_dir(raw_dir)
-    ensure_dir(feat_dir)
-    ensure_dir(em_dir)
-    ensure_dir(em_csv_dir)
+        # Output folders
+        raw_dir = os.path.join(BASE_DIR, f"agency_experiment_data/participant_{PARTICIPANT}/arff_raw")
+        feat_dir = os.path.join(BASE_DIR, f"agency_experiment_data/participant_{PARTICIPANT}/arff_features")
+        em_dir = os.path.join(BASE_DIR, f"agency_experiment_data/participant_{PARTICIPANT}/arff_em")
+        em_csv_dir = os.path.join(BASE_DIR, f"agency_experiment_data/participant_{PARTICIPANT}/csv_em")
 
-    # Base filename
-    filename = os.path.splitext(os.path.basename(csv_path))[0]
+        ensure_dir(raw_dir)
+        ensure_dir(feat_dir)
+        ensure_dir(em_dir)
+        ensure_dir(em_csv_dir)
 
-    raw_arff = os.path.join(raw_dir, f"{filename}.arff")
-    feat_arff = os.path.join(feat_dir, f"{filename}_features.arff")
-    em_arff = os.path.join(em_dir, f"{filename}_em.arff")
-    em_csv = os.path.join(em_csv_dir, f"{filename}_em.csv")
+        # Base filename
+        filename = os.path.splitext(os.path.basename(csv_path))[0]
 
-    # STEP 1: CSV -> ARFF raw
-    cmd1 = f"python {csv2arff_script} {csv_path} {raw_arff}"
-    run_command(cmd1)
+        raw_arff = os.path.join(raw_dir, f"{filename}.arff")
+        feat_arff = os.path.join(feat_dir, f"{filename}_features.arff")
+        em_arff = os.path.join(em_dir, f"{filename}_em.arff")
+        em_csv = os.path.join(em_csv_dir, f"{filename}_em.csv")
 
-    # STEP 2: ARFF raw -> ARFF with features
-    cmd2 = f"python {annotate_script} {raw_arff} {feat_arff}"
-    run_command(cmd2)
+        # STEP 1: CSV -> ARFF raw
+        cmd1 = f"python {csv2arff_script} {csv_path} {raw_arff}"
+        run_command(cmd1)
 
-    # STEP 3: ARFF with features -> ARFF with EM classification
-    cmd3 = (
-        f"python {classifier_script} "
-        f"--feat speed direction "
-        f"--model {model_path} "
-        f"--in {feat_arff} "
-        f"--out {em_arff}"
-    )
-    run_command(cmd3)
+        # STEP 2: ARFF raw -> ARFF with features
+        cmd2 = f"python {annotate_script} {raw_arff} {feat_arff}"
+        run_command(cmd2)
 
-    # STEP 4: ARFF with EM -> CSV with EM
-    cmd4 = f"python {arff2csv_script} {csv_path} {em_arff} {em_csv}"
-    run_command(cmd4)
-    
-    # STEP 5: Optional plotting
-    if args.show_plot:
-        cmd4 = f"python {plot_script} {em_arff}"
+        # STEP 3: ARFF with features -> ARFF with EM classification
+        cmd3 = (
+            f"python {classifier_script} "
+            f"--feat speed direction "
+            f"--model {model_path} "
+            f"--in {feat_arff} "
+            f"--out {em_arff}"
+        )
+        run_command(cmd3)
+
+        # STEP 4: ARFF with EM -> CSV with EM
+        cmd4 = f"python {arff2csv_script} {csv_path} {em_arff} {em_csv}"
         run_command(cmd4)
+        
+        # STEP 5: Optional plotting
+        if args.show_plot:
+            cmd4 = f"python {plot_script} {em_arff}"
+            run_command(cmd4)
 
-    print("\n✅ Pipeline completed!")
-    print(f"Raw ARFF: {raw_arff}")
-    print(f"Feature ARFF: {feat_arff}")
-    print(f"EM ARFF: {em_arff}")
+        print(f"\n✅ Pipeline completed for trial {trial}!")
+        print(f"Raw ARFF: {raw_arff}")
+        print(f"Feature ARFF: {feat_arff}")
+        print(f"EM ARFF: {em_arff}")
 
 if __name__ == "__main__":
     main()
