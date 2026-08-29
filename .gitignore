@@ -102,4 +102,4 @@ venv.bak/
 
 # mypy
 .mypy_cache/
-agency_experiment_data/
+agency_teleoperation/

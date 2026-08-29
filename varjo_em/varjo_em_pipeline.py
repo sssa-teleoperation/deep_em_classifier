@@ -5,7 +5,7 @@ import glob
 
 
 BASE_DIR = "/ws/src/deep_em_classifier"
-PARTICIPANT = 2
+PARTICIPANT = 1
 N_TRIALS = 42
 
 
@@ -19,7 +19,7 @@ def ensure_dir(path):
     os.makedirs(path, exist_ok=True)
 
 def find_csv_file(trial):
-    raw_csv_dir = os.path.join(BASE_DIR, f"agency_experiment_data/participant_{PARTICIPANT}/csv")
+    raw_csv_dir = os.path.join(BASE_DIR, f"agency_teleoperation/experiment_data/participant_{PARTICIPANT}/csv")
     pattern = os.path.join(raw_csv_dir, f"*participant_{PARTICIPANT}_trial_{trial}_*.csv")
     csv_files = glob.glob(pattern)
     if not csv_files:
@@ -47,10 +47,10 @@ def main():
         model_path = os.path.join(BASE_DIR, "model/Conv_sample_windows_epochs_1000_without_doves_final_architecture.h5")
 
         # Output folders
-        raw_dir = os.path.join(BASE_DIR, f"agency_experiment_data/participant_{PARTICIPANT}/arff_raw")
-        feat_dir = os.path.join(BASE_DIR, f"agency_experiment_data/participant_{PARTICIPANT}/arff_features")
-        em_dir = os.path.join(BASE_DIR, f"agency_experiment_data/participant_{PARTICIPANT}/arff_em")
-        em_csv_dir = os.path.join(BASE_DIR, f"agency_experiment_data/participant_{PARTICIPANT}/csv_em")
+        raw_dir = os.path.join(BASE_DIR, f"agency_teleoperation/processed_data/gaze/deep_em_classifier/participant_{PARTICIPANT}/arff_raw")
+        feat_dir = os.path.join(BASE_DIR, f"agency_teleoperation/processed_data/gaze/deep_em_classifier/participant_{PARTICIPANT}/arff_features")
+        em_dir = os.path.join(BASE_DIR, f"agency_teleoperation/processed_data/gaze/deep_em_classifier/participant_{PARTICIPANT}/arff_em")
+        em_csv_dir = os.path.join(BASE_DIR, f"agency_teleoperation/processed_data/gaze/deep_em_classifier/participant_{PARTICIPANT}/csv_em")
 
         ensure_dir(raw_dir)
         ensure_dir(feat_dir)
